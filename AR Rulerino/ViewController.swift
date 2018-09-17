@@ -19,6 +19,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Set the view's delegate
         sceneView.delegate = self
+
+        sceneView.autoenablesDefaultLighting = true
+        
+        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         
     }
     
@@ -37,6 +41,42 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Pause the view's session
         sceneView.session.pause()
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        if let touchLocation = touches.first?.location (in:sceneView){
+            let hitTestResults = sceneView.hitTest(touchLocation, types: .featurePoint)
+            
+            if let hitResult = hitTestResults.first {
+                
+                addDot (at: hitResult)
+                
+            }
+            
+        }
+        
+    }
+        
+    func addDot (at hitResult : ARHitTestResult) {
+        
+        // create a dot geometry
+        
+        let dotGeometry = SCNSphere(radius: 0.005)
+        let material = SCNMaterial()
+        material.diffuse.contents = UIColor.red
+        dotGeometry.materials = [material]
+        
+        let dotNode = SCNNode(geometry: dotGeometry)
+        
+        dotNode.position = SCNVector3(
+            x: hitResult.worldTransform.columns.3.x,
+            y: hitResult.worldTransform.columns.3.y + dotNode.boundingSphere.radius,
+            z: hitResult.worldTransform.columns.3.z
+        )
+        
+        sceneView.scene.rootNode.addChildNode(dotNode)
+        
     }
     
 }
